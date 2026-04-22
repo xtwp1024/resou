@@ -5,6 +5,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/data/resou.db")
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+CORS_CONFIG = {
+    "allow_origins": os.getenv(
+        "ALLOWED_ORIGINS", 
+        "http://localhost:5173,http://127.0.0.1:5173"
+    ).split(","),
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["*"],
+}
+
 CRAWLER_CONFIG = {
     "weibo": {
         "base_url": "https://weibo.com",
@@ -58,7 +70,7 @@ STAR_LEVELS = {
 }
 
 MINIMAX_CONFIG = {
-    "api_key": os.getenv("MINIMAX_API_KEY", "sk-cp-6Ihf42qq6X-XYEy6TwwGKRi5hokXlm9d0ofpMZmhx95AIo5PK4Sr5PecepJSkQ3ol_ofZEJdTEkyvuprYzgOA5dfqSPquyt9SAmwKvPEFjHttetnJHwl6iI"),
+    "api_key": os.getenv("MINIMAX_API_KEY", ""),
     "group_id": os.getenv("MINIMAX_GROUP_ID", ""),
     "base_url": "https://api.minimaxi.com/v1/chat/completions",
     "model": "MiniMax-M2.5",

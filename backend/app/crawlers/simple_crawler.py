@@ -2,6 +2,7 @@ import re
 import httpx
 from typing import Dict, Any, List
 from datetime import date
+from bs4 import BeautifulSoup
 
 class SimpleCrawler:
     def __init__(self, timeout: int = 30):
@@ -49,7 +50,6 @@ class WeiboCrawler(SimpleCrawler):
                 response = await client.get(url, headers=self.headers)
                 
                 if response.status_code == 200:
-                    from bs4 import BeautifulSoup
                     soup = BeautifulSoup(response.text, 'lxml')
                     cards = soup.select('.card-wrap[action-type="user_item"]')
                     
@@ -112,7 +112,6 @@ class DouyinCrawler(SimpleCrawler):
                 response = await client.get(url, headers=self.headers)
                 
                 if response.status_code == 200:
-                    from bs4 import BeautifulSoup
                     soup = BeautifulSoup(response.text, 'lxml')
                     items = soup.select('.search-user-item')
                     
@@ -168,7 +167,6 @@ class XiaohongshuCrawler(SimpleCrawler):
                 response = await client.get(url, headers=self.headers)
                 
                 if response.status_code == 200:
-                    from bs4 import BeautifulSoup
                     soup = BeautifulSoup(response.text, 'lxml')
                     items = soup.select('.user-item')
                     

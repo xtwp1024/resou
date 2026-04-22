@@ -18,6 +18,9 @@ import json
 
 router = APIRouter(prefix="/api/stars", tags=["明星管理"])
 
+ALLOWED_SORT_FIELDS = ['id', 'name', 'created_at', 'updated_at', 'level', 'category']
+ALLOWED_ORDER_DIRECTIONS = ['asc', 'desc']
+
 class FanDataUpdate(BaseModel):
     weibo_fans: Optional[int] = None
     douyin_fans: Optional[int] = None
@@ -51,10 +54,14 @@ def get_stars(
     
     total = query.count()
     
+    sort_by = sort_by if sort_by in ALLOWED_SORT_FIELDS else 'updated_at'
+    order = order if order in ALLOWED_ORDER_DIRECTIONS else 'desc'
+    
+    sort_field = getattr(Star, sort_by)
     if order == "desc":
-        query = query.order_by(desc(getattr(Star, sort_by, Star.updated_at)))
+        query = query.order_by(desc(sort_field))
     else:
-        query = query.order_by(getattr(Star, sort_by, Star.updated_at))
+        query = query.order_by(sort_field)
     
     offset = (page - 1) * page_size
     items = query.offset(offset).limit(page_size).all()
@@ -63,7 +70,7 @@ def get_stars(
     for star in items:
         weibo = db.query(WeiboData).filter(WeiboData.star_id == star.id).order_by(desc(WeiboData.collect_date)).first()
         douyin = db.query(DouyinData).filter(DouyinData.star_id == star.id).order_by(desc(DouyinData.collect_date)).first()
-        xiaohongshu = db.query(XiaohongshuData).filter(XiaohongshuData.star_id == star.id).order_by(desc(Xiaohongshu.collect_date)).first()
+        xiaohongshu = db.query(XiaohongshuData).filter(XiaohongshuData.star_id == star.id).order_by(desc(XiaohongshuData.collect_date)).first()
         
         result_items.append({
             "id": star.id,
@@ -125,7 +132,7 @@ def get_star(star_id: int, db: Session = Depends(get_db)):
     
     weibo = db.query(WeiboData).filter(WeiboData.star_id == star_id).order_by(desc(WeiboData.collect_date)).first()
     douyin = db.query(DouyinData).filter(DouyinData.star_id == star_id).order_by(desc(DouyinData.collect_date)).first()
-    xiaohongshu = db.query(XiaohongshuData).filter(Xiaohongshu.star_id == star_id).order_by(desc(Xiaohongshu.collect_date)).first()
+    xiaohongshu = db.query(XiaohongshuData).filter(XiaohongshuData.star_id == star_id).order_by(desc(XiaohongshuData.collect_date)).first()
     
     result = StarDetailResponse(
         id=star.id,
@@ -263,7 +270,7 @@ def export_stars(
     for star in stars:
         weibo = db.query(WeiboData).filter(WeiboData.star_id == star.id).order_by(desc(WeiboData.collect_date)).first()
         douyin = db.query(DouyinData).filter(DouyinData.star_id == star.id).order_by(desc(DouyinData.collect_date)).first()
-        xiaohongshu = db.query(XiaohongshuData).filter(XiaohongshuData.star_id == star.id).order_by(desc(Xiaohongshu.collect_date)).first()
+        xiaohongshu = db.query(XiaohongshuData).filter(XiaohongshuData.star_id == star.id).order_by(desc(XiaohongshuData.collect_date)).first()
         
         result.append({
             "name": star.name,

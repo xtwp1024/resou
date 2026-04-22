@@ -1,9 +1,17 @@
 import httpx
-from typing import Dict, Any, List
+import re
 import json
 import os
+from pathlib import Path
+from typing import Dict, Any, List
+from datetime import datetime
 
 os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+LOG_FILE = LOG_DIR / "minimax_error.log"
 
 class MiniMaxClient:
     def __init__(self, api_key: str, group_id: str = "", base_url: str = "https://api.minimaxi.com/v1/chat/completions", model: str = "MiniMax-M2.5"):
@@ -37,8 +45,9 @@ class MiniMaxClient:
         except Exception as e:
             error_msg = str(e)
             try:
-                with open("minimax_error.log", "a", encoding="utf-8") as f:
-                    f.write(f"Error: {error_msg}\n")
+                with open(LOG_FILE, "a", encoding="utf-8") as f:
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    f.write(f"[{timestamp}] Error: {error_msg}\n")
             except:
                 pass
             return ""
@@ -65,7 +74,6 @@ class MiniMaxClient:
         result = await self.chat(messages, temperature=0.7)
         
         try:
-            import re
             result = re.sub(r'<think[^>]*>[\s\S]*?</think\s*>', '', result, flags=re.IGNORECASE)
             if "```json" in result:
                 match = re.search(r'```json\s*([\s\S]*?)\s*```', result)
@@ -86,8 +94,9 @@ class MiniMaxClient:
         except Exception as e:
             error_msg = str(e)
             try:
-                with open("minimax_error.log", "a", encoding="utf-8") as f:
-                    f.write(f"Parse error: {error_msg}, result: {result[:500]}\n")
+                with open(LOG_FILE, "a", encoding="utf-8") as f:
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    f.write(f"[{timestamp}] Parse error: {error_msg}, result: {result[:500]}\n")
             except:
                 pass
             return []
@@ -117,8 +126,12 @@ class MiniMaxClient:
                 return data
             return {}
         except Exception as e:
-            with open("minimax_error.log", "a", encoding="utf-8") as f:
-                f.write(f"Parse error: {str(e)}\n")
+            try:
+                with open(LOG_FILE, "a", encoding="utf-8") as f:
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    f.write(f"[{timestamp}] Parse error: {str(e)}\n")
+            except:
+                pass
             return {}
     
     def analyze_star_level(self, fans_count: int, platform: str = "weibo") -> str:
